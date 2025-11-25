@@ -85,6 +85,11 @@ FOHKASU is currently in Beta. Install on Chrome / Edge / Brave:
 
 <img width="1535" height="622" alt="image" src="https://github.com/user-attachments/assets/dbba6783-2d33-4eb8-8bb2-e56e72437b26" />
 
+<img width="986" height="869" alt="image" src="https://github.com/user-attachments/assets/ce5c75da-af7f-45af-bbc0-cb0e8c9c9959" />
+
+100% local, No could servers and No data leak 
+
+
 
 ---
 
