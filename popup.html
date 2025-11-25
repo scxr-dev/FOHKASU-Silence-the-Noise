@@ -8,25 +8,27 @@
         @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@1,500&display=swap');
 
         :root {
-            /* Emotional Palette */
-            --bg-body: #020617;
-            --bg-card: #0F172A;
-            --bg-input: #1E293B;
-            --primary: #2DD4BF; /* Cyan - Hope/Focus */
-            --primary-dark: #14998A;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --danger: #F43F5E; /* Red - Danger/Guilt */
-            --success: #10B981; /* Green - Safety */
-            --border: #334155;
-            --shadow: 0 4px 0 rgba(0,0,0,0.3);
+            /* MODERN GLASS PALETTE */
+            --bg-body: #050505;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.1);
+            
+            --primary: #2DD4BF; /* Cyan */
+            --primary-glow: rgba(45, 212, 191, 0.3);
+            
+            --danger: #F43F5E; /* Red */
+            --danger-glow: rgba(244, 63, 94, 0.3);
+            
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
         }
 
         * { box-sizing: border-box; user-select: none; }
 
         body {
             width: 380px; min-height: 600px;
-            background-color: var(--bg-body);
+            background: radial-gradient(circle at top left, #1a1a1a, #000000);
             color: var(--text-main);
             font-family: 'Nunito', sans-serif;
             margin: 0; padding: 24px;
@@ -40,136 +42,199 @@
             width: 100%; margin-bottom: 24px;
         }
         .brand { 
-            font-weight: 900; font-size: 1.4rem; letter-spacing: -0.5px; 
+            font-weight: 900; font-size: 1.5rem; letter-spacing: -1px; 
             color: white; display: flex; align-items: center; gap: 8px;
+            text-shadow: 0 0 15px var(--primary-glow);
         }
         .brand span { color: var(--primary); }
         
         .icon-btn {
-            background: transparent; border: none; color: var(--text-muted);
-            cursor: pointer; font-size: 1.2rem; transition: 0.2s;
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            color: var(--text-muted); cursor: pointer; font-size: 1.1rem;
             width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-            border-radius: 12px;
+            border-radius: 12px; transition: all 0.2s ease;
         }
-        .icon-btn:hover { background: var(--bg-input); color: white; }
+        .icon-btn:hover { background: var(--glass-highlight); color: white; border-color: var(--text-muted); }
 
-        /* --- BACK BUTTON (Fixed) --- */
+        /* --- BACK BUTTON --- */
         .back-header {
             width: 100%; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
         }
         .back-btn {
             background: transparent; border: none; color: var(--text-muted);
-            font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px;
+            transition: 0.2s;
         }
-        .back-btn:hover { color: white; }
+        .back-btn:hover { color: white; transform: translateX(-3px); }
 
-        /* --- CARDS --- */
+        /* --- GLASS CARDS --- */
         .card {
-            width: 100%; background-color: var(--bg-card); border-radius: 16px;
-            padding: 20px; margin-bottom: 20px; border: 2px solid var(--border);
-            box-shadow: var(--shadow);
+            width: 100%; 
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px; margin-bottom: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         
         .card-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 16px; padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--glass-border);
         }
-        .card-title { font-weight: 800; font-size: 1rem; color: white; margin: 0; }
+        .card-title { font-weight: 800; font-size: 1rem; color: white; margin: 0; letter-spacing: 0.5px; }
 
         /* --- GRAVEYARD GRID --- */
         .graveyard-grid {
             display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;
         }
         .day-cell {
-            aspect-ratio: 1; border-radius: 8px; background: var(--bg-input);
+            aspect-ratio: 1; border-radius: 8px; background: rgba(0,0,0,0.3);
             display: flex; align-items: center; justify-content: center;
-            font-size: 0.85rem; font-weight: 700; color: var(--text-muted);
+            font-size: 0.85rem; font-weight: 700; color: #475569;
+            transition: transform 0.2s;
         }
+        .day-cell:hover { transform: scale(1.1); }
         .day-cell.skull { 
             background: rgba(244, 63, 94, 0.1); color: var(--danger); 
-            border: 1px solid rgba(244, 63, 94, 0.3);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            box-shadow: 0 0 10px var(--danger-glow);
         }
         .day-cell.shield { 
-            background: rgba(34, 197, 94, 0.1); color: var(--success); 
-            border: 1px solid rgba(34, 197, 94, 0.3);
+            background: rgba(45, 212, 191, 0.1); color: var(--primary); 
+            border: 1px solid rgba(45, 212, 191, 0.2);
+            box-shadow: 0 0 10px var(--primary-glow);
         }
 
         /* --- STATUS INDICATOR --- */
         .status-banner {
-            width: 100%; padding: 16px; border-radius: 16px;
-            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-            border: 2px solid var(--border); margin-bottom: 24px;
+            width: 100%; padding: 18px; border-radius: 18px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);
+            border: 1px solid var(--glass-border); margin-bottom: 24px;
             display: flex; align-items: center; justify-content: space-between;
-            box-shadow: var(--shadow); cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .status-banner:active { transform: translateY(2px); box-shadow: none; }
+        .status-banner:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(45, 212, 191, 0.1); }
         
-        .status-content { display: flex; align-items: center; gap: 12px; }
+        .status-content { display: flex; align-items: center; gap: 14px; }
         .status-icon { 
-            width: 40px; height: 40px; border-radius: 10px; background: var(--bg-input);
+            width: 42px; height: 42px; border-radius: 12px; background: rgba(0,0,0,0.3);
             display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
         }
-        .status-info h3 { margin: 0; font-size: 0.95rem; font-weight: 800; }
-        .status-info p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
+        .status-info h3 { margin: 0; font-size: 1rem; font-weight: 800; letter-spacing: 0.5px; }
+        .status-info p { margin: 0; font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
         
         .status-pill {
-            font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
-            padding: 4px 8px; border-radius: 6px; background: rgba(34, 197, 94, 0.1); color: var(--success);
+            font-size: 0.65rem; font-weight: 900; text-transform: uppercase;
+            padding: 5px 10px; border-radius: 8px; background: rgba(45, 212, 191, 0.1); color: var(--primary);
+            border: 1px solid rgba(45, 212, 191, 0.2); letter-spacing: 1px;
         }
-        .paused .status-pill { background: rgba(244, 63, 94, 0.1); color: var(--danger); }
+        .paused .status-pill { background: rgba(244, 63, 94, 0.1); color: var(--danger); border-color: rgba(244, 63, 94, 0.2); }
 
         /* --- BUTTONS --- */
         .btn {
-            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            width: 100%; padding: 14px; border: none; border-radius: 14px;
             font-weight: 800; font-size: 1rem; cursor: pointer;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: 0.1s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .btn:active { transform: translateY(4px); box-shadow: none; }
+        .btn:active { transform: scale(0.98); }
         
-        .btn-primary { background: var(--primary); color: #0F172A; box-shadow: 0 4px 0 var(--primary-dark); }
-        .btn-danger { background: transparent; border: 2px solid var(--danger); color: var(--danger); box-shadow: none; }
-        .btn-danger:hover { background: var(--danger); color: white; }
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--primary), #0d9488); 
+            color: #020617; 
+            box-shadow: 0 0 20px rgba(45, 212, 191, 0.3);
+        }
+        .btn-primary:hover { box-shadow: 0 0 30px rgba(45, 212, 191, 0.5); }
         
-        /* Selection Buttons (Gender/Kids) */
+        .btn-danger { 
+            background: transparent; border: 1px solid var(--danger); color: var(--danger); 
+            box-shadow: 0 0 10px rgba(244, 63, 94, 0.1);
+        }
+        .btn-danger:hover { background: var(--danger); color: white; box-shadow: 0 0 20px rgba(244, 63, 94, 0.4); }
+        
+        /* Selection Buttons */
         .select-btn {
-            flex: 1; padding: 12px; background: var(--bg-input); border: 2px solid var(--border);
-            border-radius: 12px; color: var(--text-muted); font-weight: 700; cursor: pointer;
+            flex: 1; padding: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+            border-radius: 14px; color: var(--text-muted); font-weight: 700; cursor: pointer;
             font-size: 0.9rem; transition: 0.2s;
         }
-        .select-btn:hover { border-color: var(--text-muted); }
+        .select-btn:hover { background: var(--glass-highlight); color: white; }
         .select-btn.selected { 
             background: var(--primary); color: #0F172A; border-color: var(--primary); 
-            box-shadow: 0 4px 0 var(--primary-dark);
+            box-shadow: 0 0 15px var(--primary-glow);
         }
 
         .input-field {
-            width: 100%; padding: 16px; background: var(--bg-input); border: 2px solid var(--border);
-            border-radius: 12px; color: white; font-weight: 700; font-family: 'Nunito', sans-serif;
+            width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+            border-radius: 14px; color: white; font-weight: 700; font-family: 'Nunito', sans-serif;
             outline: none; text-align: center; margin-bottom: 15px; font-size: 1.1rem;
+            transition: 0.3s;
         }
-        .input-field:focus { border-color: var(--primary); }
+        .input-field:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); box-shadow: 0 0 15px rgba(45, 212, 191, 0.1); }
 
-        /* --- CONFESSION MODAL --- */
+        /* --- CONFESSION MODAL (REDESIGNED) --- */
         #confession-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.95); z-index: 100;
+            background: rgba(2, 6, 23, 0.85); z-index: 100;
             display: none; flex-direction: column; padding: 30px;
             align-items: center; justify-content: center; text-align: center;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
         }
         .confession-box {
-            width: 100%; height: 140px; background: rgba(255,255,255,0.05);
-            border: 2px solid var(--danger); border-radius: 12px; padding: 16px;
+            width: 100%; height: 140px; background: rgba(0,0,0,0.4);
+            border: 1px solid var(--danger); border-radius: 16px; padding: 16px;
             color: white; font-family: 'Nunito', sans-serif; margin: 20px 0;
             resize: none; outline: none; font-size: 1rem;
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.1) inset;
+        }
+        
+        /* --- CUSTOM BLACKLIST STYLES --- */
+        .blacklist-container { margin-top: 15px; }
+        .blacklist-add-group { display: flex; gap: 8px; margin-bottom: 12px; }
+        .blacklist-add-group .input-field { margin-bottom: 0; flex: 1; text-align: left; padding: 12px; font-size: 0.9rem; }
+        .btn-mini { width: auto; padding: 0 16px; font-size: 1.2rem; border-radius: 12px; }
+
+        .cat-pills { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 4px; }
+        .cat-pill {
+            padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;
+            background: rgba(0,0,0,0.3); color: var(--text-muted); border: 1px solid var(--glass-border);
+            cursor: pointer; transition: 0.2s; white-space: nowrap;
+        }
+        .cat-pill:hover { background: var(--glass-highlight); color: white; }
+        .cat-pill.selected { 
+            background: var(--primary); color: #0F172A; border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+        .cat-pill[data-cat="gambling"].selected, .cat-pill[data-cat="adult"].selected { 
+            background: var(--danger); border-color: var(--danger); color: white; box-shadow: 0 0 10px var(--danger-glow); 
         }
 
-        /* Helpers */
+        .blacklist-items {
+            margin-top: 15px; max-height: 180px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 8px;
+            border-top: 1px solid var(--glass-border); padding-top: 15px;
+        }
+        .blacklist-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.03); padding: 12px 14px; border-radius: 12px;
+            font-size: 0.85rem; border: 1px solid var(--glass-border);
+        }
+        .item-domain { font-weight: 700; color: white; font-family: monospace; letter-spacing: 0.5px; }
+        .tag-cat { 
+            text-transform: uppercase; font-size: 0.6rem; padding: 3px 8px; border-radius: 6px; 
+            background: #334155; color: #cbd5e1; font-weight: 700; margin-left: 8px;
+        }
+        
         .hidden { display: none !important; }
-        .fade-in { animation: fadeIn 0.3s ease; }
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
     </style>
 </head>
 <body>
@@ -180,26 +245,28 @@
         <button class="icon-btn" id="btnSettings">⚙️</button>
     </div>
 
-    <!-- BACK HEADER (For Settings) -->
+    <!-- BACK HEADER -->
     <div class="back-header hidden" id="settingsHeader">
         <button class="back-btn" id="btnBack">← Back</button>
     </div>
 
     <!-- CONFESSION OVERLAY -->
     <div id="confession-overlay">
-        <h2 style="color:var(--danger); margin:0; font-size:1.8rem;">GIVING UP?</h2>
-        <p style="color:var(--text-muted); margin-top:10px;">Explain why you are choosing weakness.</p>
-        <textarea id="confessionInput" class="confession-box" placeholder="I am failing because... (Min 50 chars)"></textarea>
+        <h2 style="color:var(--danger); margin:0; font-size:1.8rem; text-shadow: 0 0 10px var(--danger-glow);">GIVING UP?</h2>
+        <p style="color:var(--text-muted); margin-top:10px;">The algorithm wants you back. Resist.</p>
+        <textarea id="confessionInput" class="confession-box" placeholder="Write why you are weak... (Min 50 chars)"></textarea>
+        
+        <!-- Action Buttons -->
         <button class="btn btn-primary" id="btnStayStrong" style="margin-bottom:12px;">I WILL STAY STRONG</button>
-        <button class="btn btn-danger" id="btnAdmitDefeat" style="opacity:0.5; cursor:not-allowed;">I ADMIT DEFEAT</button>
+        <button class="btn btn-danger" id="btnAdmitDefeat" style="opacity:0.3; cursor:not-allowed;" disabled>I ADMIT DEFEAT</button>
     </div>
 
     <!-- VIEW: SETUP -->
     <div id="view-setup" class="fade-in">
-        <div class="card" style="text-align: center; padding: 30px 20px;">
-            <div style="font-size: 3rem; margin-bottom: 10px;">🛡️</div>
+        <div class="card" style="text-align: center; padding: 40px 24px;">
+            <div style="font-size: 3.5rem; margin-bottom: 15px; text-shadow: 0 0 30px var(--primary-glow);">🛡️</div>
             <h2 style="margin: 0 0 10px 0; color: white;">Identity Calibration</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Who are you when no one is watching?</p>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5;">Who are you when the screen is off?</p>
             
             <div id="setup-step-1">
                 <input type="text" class="input-field" id="inputName" placeholder="Enter your name">
@@ -208,8 +275,7 @@
 
             <div id="setup-step-2" class="hidden">
                 <input type="number" class="input-field" id="inputAge" placeholder="Your Age">
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <!-- FIXED: Added explicit class for selection logic -->
+                <div style="display:flex; gap:12px; margin-bottom:20px;">
                     <button class="select-btn gender-btn" data-value="male">Male</button>
                     <button class="select-btn gender-btn" data-value="female">Female</button>
                 </div>
@@ -217,9 +283,8 @@
             </div>
 
             <div id="setup-step-3" class="hidden">
-                <p style="margin-bottom:12px; color:white; font-weight:700;">Are you a parent?</p>
-                <div style="display:flex; gap:10px; margin-bottom:20px;">
-                    <!-- FIXED: Added explicit class for selection logic -->
+                <p style="margin-bottom:15px; color:white; font-weight:700;">Are you a parent?</p>
+                <div style="display:flex; gap:12px; margin-bottom:25px;">
                     <button class="select-btn parent-btn" data-value="false">No</button>
                     <button class="select-btn parent-btn" data-value="true">Yes</button>
                 </div>
@@ -246,37 +311,59 @@
         <div class="card">
             <div class="card-header">
                 <div class="card-title">The Graveyard</div>
-                <div style="font-size:1.2rem;">💀</div>
+                <div style="font-size:1.2rem; opacity:0.7;">💀</div>
             </div>
             <div class="graveyard-grid" id="graveyardGrid"></div>
-            <div style="text-align: center; margin-top: 12px; font-size: 0.75rem; color: var(--text-muted);">
+            <div style="text-align: center; margin-top: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
                 Last 28 Days
             </div>
         </div>
 
         <!-- Profile Card -->
-        <div class="card" style="padding: 16px; display: flex; align-items: center; gap: 16px;">
-            <div style="font-size: 2rem;">👤</div>
+        <div class="card" style="padding: 20px; display: flex; align-items: center; gap: 20px;">
+            <div style="font-size: 2.2rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));">👤</div>
             <div>
-                <h3 id="display-name" style="margin: 0; font-size: 1.1rem; color: white;">User</h3>
-                <p id="display-details" style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Profile Details</p>
+                <h3 id="display-name" style="margin: 0; font-size: 1.2rem; color: white;">User</h3>
+                <p id="display-details" style="margin: 0; font-size: 0.85rem; color: var(--text-muted); margin-top:4px;">Profile Details</p>
             </div>
         </div>
     </div>
 
-    <!-- VIEW: SETTINGS (LOCKED DOWN) -->
+    <!-- VIEW: SETTINGS -->
     <div id="view-settings" class="hidden fade-in">
         <div class="card">
             <div class="card-header">
-                <div class="card-title">System Configuration</div>
+                <div class="card-title">Targeting Systems</div>
             </div>
             
-            <div style="padding: 10px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">
-                <p><strong>Hallucinations:</strong> <span style="color:var(--success)">ENABLED</span></p>
-                <p><strong>Child Voice:</strong> <span style="color:var(--success)">ENABLED</span></p>
-                <p><strong>Auditory Horror:</strong> <span style="color:var(--success)">ENABLED</span></p>
-                <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
-                <p style="font-size:0.8rem; font-style:italic;">"You cannot turn off the truth. The settings are locked for your own good."</p>
+            <div style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.8;">
+                <p><strong>Hallucinations:</strong> <span style="color:var(--primary); text-shadow: 0 0 10px var(--primary-glow);">ENABLED</span></p>
+                <p><strong>Child Voice:</strong> <span style="color:var(--primary); text-shadow: 0 0 10px var(--primary-glow);">ENABLED</span></p>
+                <p><strong>Auditory Horror:</strong> <span style="color:var(--primary); text-shadow: 0 0 10px var(--primary-glow);">ENABLED</span></p>
+                
+                <hr style="border:0; border-top:1px solid var(--glass-border); margin:20px 0;">
+                
+                <!-- CUSTOM BLACKLIST SECTION -->
+                <div class="blacklist-container">
+                    <p style="color: white; font-weight: 700; margin-bottom: 8px;">Add Custom Target</p>
+                    <p style="color: var(--danger); font-size: 0.75rem; margin-top: -6px; margin-bottom: 12px; font-weight:700;">⚠️ WARNING: Permanent. Cannot be removed.</p>
+                    
+                    <div class="blacklist-add-group">
+                        <input type="text" class="input-field" id="inputBlacklist" placeholder="example.com">
+                        <button class="btn btn-primary btn-mini" id="btnAddBlacklist">+</button>
+                    </div>
+                    
+                    <div class="cat-pills">
+                        <div class="cat-pill selected" data-cat="social">Social</div>
+                        <div class="cat-pill" data-cat="gambling">Gambling</div>
+                        <div class="cat-pill" data-cat="adult">Adult</div>
+                        <div class="cat-pill" data-cat="other">Other</div>
+                    </div>
+
+                    <div class="blacklist-items" id="blacklistList">
+                        <!-- Items injected via JS -->
+                    </div>
+                </div>
             </div>
         </div>
 
