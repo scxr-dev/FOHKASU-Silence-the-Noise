@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // State
     let userData = { name: "", age: null, gender: "male", kids: false };
     let isPaused = false;
+    let customBlacklist = []; 
+    let selectedCategory = 'social';
+    let shameTimer = null; // Store timer ID
 
     // Navigation Views
     const views = {
@@ -18,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name === 'settings') {
             document.getElementById('mainHeader').classList.add('hidden');
             document.getElementById('settingsHeader').classList.remove('hidden');
+            renderBlacklist(); 
         } else {
             document.getElementById('mainHeader').classList.remove('hidden');
             document.getElementById('settingsHeader').classList.add('hidden');
@@ -27,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // INIT
     loadState();
 
-    // --- SETUP LOGIC (FIXED BUTTONS) ---
+    // --- SETUP LOGIC ---
     let tempGender = 'male';
     let tempParent = false;
 
@@ -35,15 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const genderBtns = document.querySelectorAll('.gender-btn');
     genderBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Remove selected class from all
             genderBtns.forEach(b => b.classList.remove('selected'));
-            // Add to clicked
             btn.classList.add('selected');
-            // Update state
             tempGender = btn.getAttribute('data-value');
         });
     });
-    // Select first by default
     if(genderBtns.length > 0) genderBtns[0].click();
 
     // Parent Selection
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const age = document.getElementById('inputAge').value;
         if(!age || age < 5 || age > 100) return shake(document.getElementById('inputAge'));
         userData.age = age;
-        userData.gender = tempGender; // Save the selected gender
+        userData.gender = tempGender;
         document.getElementById('setup-step-2').classList.add('hidden');
         document.getElementById('setup-step-3').classList.remove('hidden');
     });
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- HOME LOGIC ---
     function loadState() {
-        chrome.storage.sync.get(['fohkasuProfile', 'fohkasuPaused', 'murderedDays'], (res) => {
+        chrome.storage.sync.get(['fohkasuProfile', 'fohkasuPaused', 'murderedDays', 'customBlacklist'], (res) => {
             if (!res.fohkasuProfile) {
                 showView('setup');
                 return;
@@ -92,6 +92,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             userData = res.fohkasuProfile;
             isPaused = res.fohkasuPaused || false;
+            
+            // Migrate old blacklist format
+            let rawList = res.customBlacklist || [];
+            customBlacklist = rawList.map(item => {
+                if (typeof item === 'string') {
+                    return { url: item, category: 'other', addedAt: Date.now() };
+                }
+                return item;
+            });
 
             // Update UI
             document.getElementById('display-name').innerText = userData.name;
@@ -126,42 +135,131 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- SETTINGS: CUSTOM BLACKLIST ---
+    const inputBlacklist = document.getElementById('inputBlacklist');
+    const btnAddBlacklist = document.getElementById('btnAddBlacklist');
+    const blacklistList = document.getElementById('blacklistList');
+    const catPills = document.querySelectorAll('.cat-pill');
+
+    catPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            catPills.forEach(p => p.classList.remove('selected'));
+            pill.classList.add('selected');
+            selectedCategory = pill.getAttribute('data-cat');
+        });
+    });
+
+    btnAddBlacklist.addEventListener('click', () => {
+        const rawSite = inputBlacklist.value.trim().toLowerCase();
+
+        if(!rawSite) return shake(inputBlacklist);
+        let domain = rawSite.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+        if(domain.length < 3 || !domain.includes('.')) return shake(inputBlacklist);
+
+        if(!customBlacklist.some(item => item.url === domain)) {
+            if(!confirm(`WARNING: Adding ${domain} to the permanent blocklist. You can never remove this. Proceed?`)) {
+                return;
+            }
+            customBlacklist.push({ url: domain, category: selectedCategory, addedAt: Date.now() });
+            saveBlacklist();
+        }
+        inputBlacklist.value = '';
+    });
+
+    function saveBlacklist() {
+        chrome.storage.sync.set({ customBlacklist: customBlacklist }, () => renderBlacklist());
+    }
+
+    function renderBlacklist() {
+        blacklistList.innerHTML = '';
+        [...customBlacklist].reverse().forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'blacklist-item';
+            el.innerHTML = `
+                <div class="item-info">
+                    <span class="item-domain">${item.url}</span>
+                    <span class="tag-cat">${item.category}</span>
+                </div>
+                <div><span class="blacklist-locked" title="Permanent Block">🔒</span></div>
+            `;
+            blacklistList.appendChild(el);
+        });
+    }
+
     // --- NAVIGATION ---
     document.getElementById('btnSettings').addEventListener('click', () => showView('settings'));
     document.getElementById('btnBack').addEventListener('click', () => showView('home'));
 
-    // --- TOGGLE & CONFESSION ---
+    // --- TOGGLE & SHAME TIMER LOGIC ---
     const confessionOverlay = document.getElementById('confession-overlay');
     const confessionInput = document.getElementById('confessionInput');
     const btnAdmitDefeat = document.getElementById('btnAdmitDefeat');
 
     document.getElementById('systemToggle').addEventListener('click', () => {
         if(isPaused) {
+            // Unpausing is instant
             isPaused = false;
             chrome.storage.sync.set({ fohkasuPaused: false });
             updateStatusUI();
         } else {
+            // PAUSING REQUIRES PENANCE
             confessionOverlay.style.display = 'flex';
             confessionInput.value = "";
-            btnAdmitDefeat.style.opacity = "0.5";
+            
+            // LOCK THE BUTTON INITIALLY
+            btnAdmitDefeat.style.opacity = "0.3";
             btnAdmitDefeat.style.cursor = "not-allowed";
+            btnAdmitDefeat.disabled = true;
+
+            // START THE SHAME TIMER (30 Seconds)
+            let cooldown = 30;
+            btnAdmitDefeat.innerText = `WAIT (${cooldown}s)`;
+            
+            if(shameTimer) clearInterval(shameTimer);
+            
+            shameTimer = setInterval(() => {
+                cooldown--;
+                if(cooldown > 0) {
+                    btnAdmitDefeat.innerText = `WAIT (${cooldown}s)`;
+                } else {
+                    clearInterval(shameTimer);
+                    // CHECK CONFESSION LENGTH
+                    if(confessionInput.value.length >= 50) {
+                        enableDefeatButton();
+                    } else {
+                        btnAdmitDefeat.innerText = "WRITE MORE (50 CHARS)";
+                    }
+                }
+            }, 1000);
         }
     });
 
     confessionInput.addEventListener('input', () => {
+        // Only enable if timer is done AND text is sufficient
+        if(btnAdmitDefeat.innerText.includes("WAIT")) return; // Still waiting
+        
         if(confessionInput.value.length >= 50) {
-            btnAdmitDefeat.style.opacity = "1";
-            btnAdmitDefeat.style.cursor = "pointer";
+            enableDefeatButton();
         } else {
-            btnAdmitDefeat.style.opacity = "0.5";
-            btnAdmitDefeat.style.cursor = "not-allowed";
+            btnAdmitDefeat.innerText = "WRITE MORE (50 CHARS)";
+            btnAdmitDefeat.style.opacity = "0.3";
+            btnAdmitDefeat.disabled = true;
         }
     });
 
-    document.getElementById('btnStayStrong').addEventListener('click', () => confessionOverlay.style.display = 'none');
+    function enableDefeatButton() {
+        btnAdmitDefeat.innerText = "I AM WEAK (DISABLE)";
+        btnAdmitDefeat.style.opacity = "1";
+        btnAdmitDefeat.style.cursor = "pointer";
+        btnAdmitDefeat.disabled = false;
+    }
+
+    document.getElementById('btnStayStrong').addEventListener('click', () => {
+        confessionOverlay.style.display = 'none';
+        if(shameTimer) clearInterval(shameTimer);
+    });
 
     btnAdmitDefeat.addEventListener('click', () => {
-        if(confessionInput.value.length < 50) return;
         isPaused = true;
         chrome.storage.sync.set({ fohkasuPaused: true });
         updateStatusUI();
@@ -176,14 +274,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if(isPaused) {
             root.classList.add('paused');
             pill.innerText = "PAUSED";
-            pill.style.color = "#F43F5E"; // Danger Color
-            pill.style.background = "rgba(244, 63, 94, 0.1)";
             sub.innerText = "You are vulnerable";
         } else {
             root.classList.remove('paused');
             pill.innerText = "ACTIVE";
-            pill.style.color = "#10B981"; // Success Color
-            pill.style.background = "rgba(16, 185, 129, 0.1)";
             sub.innerText = "Protecting your mind";
         }
     }
@@ -197,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function shake(el) {
         el.style.borderColor = "#F43F5E";
-        el.classList.add('shake'); // You'd need a CSS animation for 'shake' ideally
-        setTimeout(() => el.style.borderColor = "#334155", 500);
+        el.classList.add('shake');
+        setTimeout(() => el.style.borderColor = "var(--glass-border)", 500);
     }
 });
