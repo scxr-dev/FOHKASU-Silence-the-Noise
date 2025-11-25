@@ -1,9 +1,66 @@
-// FOHKASU V5.0 - Stability Patch
-// Features: Content Injection, Child Voice Override, Visceral Horror, Error Handling
+// FOHKASU V6.0 - THE WARDEN & DETECTIVE UPDATE
+// Features: Content Injection, Warden Anti-Cheat, Child Voice, Visceral Horror, Categorized Blocklist, Incognito Lockdown
 
 let userProfile = { name: "You", age: 25, gender: "other", married: false, kids: false };
-// Force settings ON since we removed the UI to toggle them
+// Force settings ON. No mercy.
 let settings = { hallucinations: true, childMode: true, audio: true };
+
+// --- LISTENER FOR BACKGROUND MESSAGES (INCOGNITO LOCK) ---
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "LOCKDOWN_INCOGNITO") {
+        enforceIncognitoLock();
+    } else if (request.action === "UNLOCK_INCOGNITO") {
+        removeIncognitoLock();
+    }
+});
+
+let incognitoOverlay = null;
+
+function enforceIncognitoLock() {
+    if (document.getElementById('fohkasu-incognito-lock')) return; // Already locked
+
+    incognitoOverlay = document.createElement('div');
+    incognitoOverlay.id = "fohkasu-incognito-lock";
+    
+    // Style directly here to ensure it hits hard
+    Object.assign(incognitoOverlay.style, {
+        position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh',
+        backgroundColor: 'black', zIndex: '2147483647',
+        display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+        color: '#F43F5E', fontFamily: 'monospace', textAlign: 'center', padding: '20px'
+    });
+
+    incognitoOverlay.innerHTML = `
+        <h1 style="font-size: 3rem; margin-bottom: 20px;">ACCESS DENIED</h1>
+        <p style="font-size: 1.5rem; color: white; max-width: 600px;">
+            I cannot protect you in the dark.
+        </p>
+        <p style="font-size: 1.2rem; color: #94A3B8; margin-top: 10px;">
+            You have disabled Incognito Access. <br>
+            I have locked your browser until you fix it.
+        </p>
+        <div style="margin-top: 40px; padding: 30px; border: 2px solid white; border-radius: 15px; background: rgba(255,255,255,0.1); text-align: left;">
+            <p style="color: #2DD4BF; font-weight: bold; margin-bottom: 15px; font-size: 1.2rem;">HOW TO UNLOCK:</p>
+            <p style="color: white; margin: 10px 0;">1. I have opened the <strong>Extensions</strong> tab for you.</p>
+            <p style="color: white; margin: 10px 0;">2. Find the <strong>FOHKASU</strong> card.</p>
+            <p style="color: white; margin: 10px 0;">3. Click the <strong>DETAILS</strong> button.</p>
+            <p style="color: white; margin: 10px 0;">4. Scroll down and toggle <strong>"Allow in Incognito"</strong> ON.</p>
+        </div>
+    `;
+
+    document.body.appendChild(incognitoOverlay);
+    document.body.style.overflow = 'hidden'; // Stop scrolling
+    summonWarden(incognitoOverlay); // The Warden protects this lock too
+}
+
+function removeIncognitoLock() {
+    const el = document.getElementById('fohkasu-incognito-lock');
+    if (el) {
+        el.remove();
+        document.body.style.overflow = '';
+    }
+}
+
 
 // --- 1. GENERAL AMMUNITION ---
 const MSG_GENERAL = [
@@ -96,6 +153,18 @@ const SITE_MESSAGES = {
         "You are using people as objects. Stop it.",
         "Does this make you feel proud? Or dirty?",
         "Go find a real person. This is just pixels and regret."
+    ],
+    "social_generic": [
+        "Why are you here again? Did you already forget your 14-day promise?",
+        "This website is designed to keep you poor and distracted.",
+        "You blocked this because you knew it was killing you.",
+        "Another like, another scroll, another minute wasted."
+    ],
+    "custom": [
+        "You added this to the list yourself. You knew it was poison.",
+        "You are betraying your own promise.",
+        "Why did you block this? Remember that reason.",
+        "Step back. This is the custom hell you built to protect yourself."
     ]
 };
 
@@ -112,21 +181,18 @@ const CORE_SITES = {
 let protocolActive = false;
 let bgMusic = null;
 
-// FIX: Assign interval to variable so we can stop it if extension dies
 const securityLoop = setInterval(() => { 
     if (!protocolActive) runSecurityCheck(); 
 }, 1000);
 
 function runSecurityCheck() {
-    // FIX: Check if extension context is still valid
     if (!chrome.runtime?.id) {
         console.log("FOHKASU: Context invalidated. Stopping script.");
         clearInterval(securityLoop);
         return;
     }
 
-    chrome.storage.sync.get(['fohkasuProfile', 'fohkasuPaused'], (res) => {
-        // FIX: Guard against runtime errors during callback
+    chrome.storage.sync.get(['fohkasuProfile', 'fohkasuPaused', 'customBlacklist'], (res) => {
         if (chrome.runtime.lastError) return;
 
         if (res.fohkasuPaused) return; 
@@ -135,6 +201,7 @@ function runSecurityCheck() {
         const currentUrl = window.location.href.toLowerCase();
         let detectedCategory = null;
 
+        // 1. Check Core Sites
         for (const key in CORE_SITES) {
             if (currentUrl.includes(key)) {
                 if (key.includes("youtube.com") && !currentUrl.includes("/shorts")) return;
@@ -143,12 +210,27 @@ function runSecurityCheck() {
             }
         }
 
+        // 2. Check Custom Blacklist
+        if (!detectedCategory && res.customBlacklist && Array.isArray(res.customBlacklist)) {
+            for (const item of res.customBlacklist) {
+                const url = item.url || item; 
+                const category = item.category || 'custom';
+
+                if (currentUrl.includes(url.toLowerCase())) {
+                    if (category === 'gambling') detectedCategory = 'gambling';
+                    else if (category === 'adult') detectedCategory = 'adult';
+                    else if (category === 'social') detectedCategory = 'social_generic';
+                    else detectedCategory = 'custom';
+                    break;
+                }
+            }
+        }
+
         if (detectedCategory) initiateProtocol(detectedCategory);
     });
 }
 
 function initiateProtocol(category) {
-    // FIX: Double check context before engaging
     if (!chrome.runtime?.id) return;
 
     console.log("FOHKASU: Engaging Target -> " + category);
@@ -156,7 +238,6 @@ function initiateProtocol(category) {
     
     recordMurder();
     
-    // CHECK SETTING: Hallucinations
     if (settings.hallucinations) {
         hallucinate(category);
     }
@@ -169,25 +250,19 @@ function initiateProtocol(category) {
 
 // --- HALLUCINATION LOGIC ---
 function hallucinate(category) {
-    // 1. Get nightmare string
     const msg = getTailoredMessage(category);
-    
-    // 2. Inject into Title
     document.title = "RUN AWAY. " + msg;
-
-    // 3. Inject into Headers (Visceral Hacking)
     const headers = document.querySelectorAll('h1, h2, h3, ytd-rich-grid-media');
     headers.forEach(h => {
         h.innerText = msg;
         h.style.color = "red";
         h.style.fontFamily = "Courier New";
+        h.style.textShadow = "0 0 5px red";
     });
 }
 
 function recordMurder() {
-    // FIX: Check context before storage write
     if (!chrome.runtime?.id) return;
-
     const today = new Date().toDateString();
     chrome.storage.sync.get(['murderedDays'], (res) => {
         if (chrome.runtime.lastError) return;
@@ -200,7 +275,6 @@ function recordMurder() {
 }
 
 function getTailoredMessage(category) {
-    // Force Child Mode logic since we removed the toggle
     const useChildMode = userProfile.kids; 
     let parentTitle = (userProfile.gender === 'male') ? "Dad" : "Mama";
 
@@ -225,6 +299,8 @@ function getTailoredMessage(category) {
     if (SITE_MESSAGES[category]) pool = pool.concat(SITE_MESSAGES[category]);
     else pool = pool.concat(MSG_GENERAL);
 
+    if (category === 'custom' || category === 'social_generic') pool = pool.concat(MSG_GENERAL);
+
     if (userProfile.gender === 'male') pool = pool.concat(MSG_MALE);
     if (userProfile.gender === 'female') pool = pool.concat(MSG_FEMALE);
     if (userProfile.kids) pool = pool.concat(MSG_PARENTS);
@@ -239,6 +315,42 @@ function getTailoredMessage(category) {
 function calculateWeeksLeft() {
     const age = userProfile.age || 25;
     return (80 * 52) - (age * 52);
+}
+
+// --- THE WARDEN: ANTI-CHEAT SYSTEM ---
+// The Warden watches the DOM. If you delete the overlay, it bites.
+function summonWarden(overlayElement) {
+    const warden = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            // 1. If overlay is removed from body
+            if (!document.body.contains(overlayElement)) {
+                console.log("%cFOHKASU: CHEAT ATTEMPT DETECTED. RESTORING...", "color: red; font-size: 20px; font-weight: bold;");
+                document.body.appendChild(overlayElement);
+                // Punishment: Reset volume max
+                if(bgMusic) { bgMusic.volume = 1.0; bgMusic.currentTime = 0; }
+            }
+            
+            // 2. If user tries to hide it via styles (display: none, opacity: 0, z-index manipulation)
+            if (mutation.type === "attributes" && mutation.attributeName === "style") {
+                const s = overlayElement.style;
+                if (s.display === "none" || s.opacity === "0" || s.visibility === "hidden" || parseInt(s.zIndex) < 2147483647) {
+                    console.log("FOHKASU: Nice try.");
+                    s.display = "flex";
+                    s.opacity = "1";
+                    s.visibility = "visible";
+                    s.zIndex = "2147483647";
+                }
+            }
+        });
+    });
+
+    // Watch the body for child list changes (deletions)
+    warden.observe(document.body, { childList: true });
+    // Watch the overlay itself for attribute hacks
+    warden.observe(overlayElement, { attributes: true });
+
+    // Block right-click on overlay to prevent easy "Inspect Element" access
+    overlayElement.addEventListener('contextmenu', (e) => e.preventDefault());
 }
 
 function enterTheVoid(category) {
@@ -264,6 +376,10 @@ function enterTheVoid(category) {
     `;
 
     document.body.appendChild(overlay);
+    
+    // SUMMON THE WARDEN
+    summonWarden(overlay);
+
     requestAnimationFrame(() => { setTimeout(() => { overlay.style.opacity = "1"; }, 100); });
     
     // CHECK SETTING: Audio
@@ -280,9 +396,7 @@ function enterTheVoid(category) {
 }
 
 function setupAudio() {
-    // FIX: Check context before accessing runtime
     if (!chrome.runtime?.id) return;
-
     const audioUrl = chrome.runtime.getURL("audio/aria_math.mp3");
     bgMusic = new Audio(audioUrl);
     bgMusic.volume = 0; bgMusic.loop = true;
