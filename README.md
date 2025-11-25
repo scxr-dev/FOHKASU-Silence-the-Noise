@@ -82,6 +82,10 @@ FOHKASU is currently in Beta. Install on Chrome / Edge / Brave:
 5. Select the unzipped `FOHKASU` folder.  
 6. Initialize: Click the extension icon and set up your profile. Be honest.
 
+
+<img width="1535" height="622" alt="image" src="https://github.com/user-attachments/assets/dbba6783-2d33-4eb8-8bb2-e56e72437b26" />
+
+
 ---
 
 📂 Project Structure
